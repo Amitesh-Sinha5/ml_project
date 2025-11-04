@@ -1,0 +1,169 @@
+
+================================================================================
+ANALYSIS REPORT - HANGMAN ML HACKATHON
+================================================================================
+
+1. KEY OBSERVATIONS
+────────────────────────────────────────────────────────────────────────────────
+
+Training Phase:
+  • Model converged after ~10,000 training episodes
+  • Final training success rate: 53.0%
+  • Epsilon decayed from 1.0 to 0.0100
+  • Q-table grew to 72,397 unique states
+  • Average reward improved from 34.55 to 52.70
+
+EDA Insights:
+  • Letter frequency analysis revealed 'e' as most common
+  • Positional analysis showed bias: 'p' common at start, 'e' at end
+  • Bigram 'er' most frequent 2-letter pattern
+  • Word difficulty analysis identified 8685 hard words in corpus
+  • Vowel-consonant ratio: 39.4% vowels across corpus
+
+Challenges Encountered:
+  • Balancing exploration vs exploitation during early training
+  • Handling words with repeated letters required special attention
+  • Managing large state space - combinatorial explosion of word patterns
+  • Rare letter patterns (words with q, x, z) were difficult to learn
+  • Long words (>13 chars) showed lower success rate
+
+Successes:
+  • Achieved 30.4% success rate on test set
+  • Minimal repeated guesses: 0.000 per game
+  • Outperformed frequency baseline by 85.7%
+  • Perfect games (0 wrong): 10 out of 2000
+  • HMM-RL hybrid synergy proved effective
+
+
+2. HMM DESIGN CHOICES
+────────────────────────────────────────────────────────────────────────────────
+
+Architecture:
+  • Length-specific models: Trained separate HMM for each word length
+  • Rationale: EDA showed significant variation in letter patterns by length
+  • Created 24 independent models covering length range 1-24
+
+Hidden States:
+  • Hidden States = Letter positions in words (0, 1, 2, ..., n-1)
+  • Captures positional dependency of letters
+  • Each position has its own probability distribution over alphabet
+
+Emissions:
+  • Emissions = Actual letters appearing at each position
+  • Trained on corpus to learn P(letter | position)
+  • Applied Laplace smoothing to handle unseen letter-position pairs
+
+Enhancements:
+  • Integrated 678 bigram patterns for context
+  • Integrated 8,151 trigram patterns for stronger context
+  • Weighted combination: 70% position + 20% bigram + 10% trigram
+  • Fallback to global frequencies for unknown word lengths
+
+
+3. REINFORCEMENT LEARNING STATE & REWARD DESIGN
+────────────────────────────────────────────────────────────────────────────────
+
+State Representation:
+  • State = (word_pattern, word_length, lives_left, num_guessed)
+  • word_pattern: Abstract representation (e.g., '_pp_e' → '_001_')
+  • Reduces state space while preserving structure
+  • Final state space: 72,397 unique states
+
+Action Space:
+  • Actions = 26 letters (a-z)
+  • Filtered to only include unguessed letters
+  • Dynamic action space shrinks as game progresses
+
+Reward Function:
+  • +10 points per letter revealed (correct guess)
+  • +100 points for winning the game
+  • -5 points for wrong guess
+  • -10 points for repeated guess (heavy penalty)
+  • -50 points for losing the game
+  • Design rationale: Heavily reward success, moderately penalize mistakes
+
+Learning Algorithm:
+  • Q-Learning with epsilon-greedy exploration
+  • Learning rate (α): 0.1
+  • Discount factor (γ): 0.95
+  • Initial epsilon: 1.0, Final: 0.0100
+  • Epsilon decay: 0.995 per episode
+
+Hybrid Decision Making:
+  • Exploitation combines three signals:
+  •   • 60% Q-values (learned strategy)
+  •   • 30% HMM probabilities (language model)
+  •   • 10% EDA heuristics (domain knowledge)
+  • Early game: Boost vowels by 50%
+  • Letter frequency ranking used as tiebreaker
+
+
+4. EXPLORATION VS EXPLOITATION STRATEGY
+────────────────────────────────────────────────────────────────────────────────
+
+Method: Epsilon-greedy with HMM-guided exploration
+
+Rationale:
+  • Pure random exploration is inefficient for Hangman
+  • HMM provides informed priors for exploration
+  • Samples from HMM probability distribution instead of uniform
+  • Learns faster by exploring promising actions first
+
+Schedule:
+  • Start: ε = 1.0 (100% exploration)
+  • End: ε = 0.0100 (~1.0% exploration)
+  • Decay: Multiplicative (0.995 per episode)
+  • Reached <0.1 exploration after ~459 episodes
+
+Effectiveness:
+  • Success rate improved steadily throughout training
+  • Final 1000 episodes: 52.70 avg reward
+  • Exploration-exploitation balance achieved around episode 5000
+
+
+5. FUTURE IMPROVEMENTS
+────────────────────────────────────────────────────────────────────────────────
+
+1. Deep Q-Network (DQN)
+   Description: Replace Q-table with neural network for better generalization
+   Benefit: Handle larger state spaces, learn abstract patterns
+
+2. Character-level LSTM/Transformer
+   Description: Use modern NLP models for character prediction
+   Benefit: Capture long-range dependencies, better context understanding
+
+3. Monte Carlo Tree Search (MCTS)
+   Description: Lookahead planning with simulation rollouts
+   Benefit: Anticipate future game states, optimal multi-step strategy
+
+4. Prioritized Experience Replay
+   Description: Learn more from difficult/important experiences
+   Benefit: Faster convergence, better performance on hard words
+
+5. Ensemble Methods
+   Description: Combine multiple models (HMM + neural + rule-based)
+   Benefit: Robust predictions, reduced variance
+
+6. Transfer Learning
+   Description: Pre-train on large word corpora (Wikipedia, etc.)
+   Benefit: Better language understanding, generalization
+
+7. Adaptive Difficulty Modeling
+   Description: Separate strategies for easy/medium/hard words
+   Benefit: Optimized approach per difficulty level
+
+8. Multi-objective Optimization
+   Description: Jointly optimize success rate, wrong guesses, speed
+   Benefit: Balanced performance across all metrics
+
+
+================================================================================
+FINAL METRICS
+================================================================================
+Final Score:              -52071.00
+Success Rate:             30.45%
+Avg Wrong Guesses:        5.268
+Avg Repeated Guesses:     0.000
+Perfect Games:            10
+Improvement over Baseline: +85.67%
+================================================================================

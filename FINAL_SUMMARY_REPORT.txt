@@ -1,0 +1,76 @@
+
+================================================================================
+HANGMAN ML HACKATHON - FINAL SUMMARY REPORT
+================================================================================
+
+DATASET INFORMATION:
+-------------------
+Training Corpus Size:        50,000 words
+Test Set Size:               2,000 words
+Word Length Range:           1-24 characters
+
+EDA KEY FINDINGS:
+----------------
+• Top frequent letters: e, a, i, o, r
+• Average word length: 9.50 characters
+• Words with repeated letters: 81.8%
+• Most common bigram: 'er'
+• Average difficulty score: 4.04
+
+MODEL ARCHITECTURE:
+------------------
+Hidden Markov Model:
+  • Length-specific models: 24 different word lengths
+  • Bigram patterns: 678
+  • Trigram patterns: 8,151
+  • Position-based probability distributions
+
+Reinforcement Learning:
+  • Algorithm: Q-Learning with epsilon-greedy
+  • State space: 72,083 unique states
+  • Action space: 26 letters (a-z)
+  • Hybrid decision: 60% Q-values + 30% HMM + 10% EDA heuristics
+
+TRAINING RESULTS:
+----------------
+Training Episodes:           10,000
+Final Training Success Rate: 49.00%
+Final Epsilon:               0.0100
+Q-Table Size:                72,083 states
+
+TEST SET PERFORMANCE:
+--------------------
+Games Played:                2,000
+Games Won:                   606
+Games Lost:                  1,394
+
+Success Rate:                30.30%
+
+Total Wrong Guesses:         10,555
+Avg Wrong Guesses/Game:      5.277
+
+Total Repeated Guesses:      0
+Avg Repeated Guesses/Game:   0.000
+
+SCORE BREAKDOWN:
+---------------
+Success Bonus:               +606.00
+Wrong Guess Penalty:         -52775.00
+Repeated Guess Penalty:      0.00
+
+================================================================================
+FINAL SCORE: -52169.00
+================================================================================
+
+FILES GENERATED:
+---------------
+✓ enhanced_hmm_model.pkl              - Trained HMM with EDA insights
+✓ enhanced_agent.pkl                  - Complete trained RL agent
+✓ q_table.pkl                         - Q-Learning Q-table
+✓ comprehensive_results.pkl           - All results and metrics
+✓ detailed_evaluation_results.csv     - Per-game detailed results
+✓ eda_results.pkl                     - EDA analysis data
+
+================================================================================
+Generated: 2025-11-04 10:47:26.789324
+================================================================================
